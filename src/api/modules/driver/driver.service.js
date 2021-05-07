@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
     status: 0,
     tokenId: "",
   });
-  res.send({ success: "Create successfully." });
+  res.send({ success: "Create successfully.", driverId: driverSaved._id });
   res.end();
 };
 

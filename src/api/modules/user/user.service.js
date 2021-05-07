@@ -32,7 +32,7 @@ exports.create = async (req, res) => {
     status: 0,
     tokenId: "",
   });
-  res.send({ success: "Create successfully." });
+  res.send({ success: "Create successfully.", userId: userSaved._id });
   res.end();
 };
 

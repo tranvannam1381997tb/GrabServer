@@ -11,25 +11,29 @@ const admin = require("firebase-admin");
  */
 exports.create = async (req, res) => {
   const userInfo = req.body;
+  const isExistPhoneNumber = await User.exists({
+    phoneNumber: userInfo.phoneNumber,
+  });
+  if (isExistPhoneNumber) {
+    res.status(400).send({ error: "Phone number already exists." });
+    return;
+  }
   let userNew = new User();
-  userNew.username = userInfo.username;
   userNew.password = userInfo.password;
   userNew.name = userInfo.name;
   userNew.age = userInfo.age;
   userNew.sex = userInfo.sex;
   userNew.phoneNumber = userInfo.phoneNumber;
-  let userSaved = await userNew.save();
+  const userSaved = await userNew.save();
   let userRef = admin.database().ref(`users/${userSaved._id}`);
   userRef.set({
-    name: userInfo.name,
-    age: userInfo.age,
-    sex: userInfo.sex,
-    phoneNumber: userInfo.phoneNumber,
-    status: 0,
     longitude: 0,
     latitude: 0,
+    status: 0,
+    tokenId: "",
   });
-  res.send("Create successfully!");
+  res.send({ success: "Create successfully." });
+  res.end();
 };
 
 /**
@@ -38,24 +42,28 @@ exports.create = async (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   const userInfo = req.body;
-  const username = userInfo.username;
-  const password = userInfo.password;
+  const isExistPhoneNumber = await User.exists({
+    phoneNumber: userInfo.phoneNumber,
+  });
+  if (!isExistPhoneNumber) {
+    res.status(400).end();
+    return;
+  }
   User.findOne({
-    username: username,
-    password: password,
+    phoneNumber: userInfo.phoneNumber,
+    password: userInfo.password,
   }).then((user) => {
-    if (user) {
-      // return id user
-      console.log(user);
-      res.send({
-        mess: "Login successfully.",
-        userId: 1,
-      });
-    } else {
-      res.send({ error: "Login failed." });
+    if (!user) {
+      res.status(400).end();
+      return;
     }
+    res.send({
+      success: "Login successfully.",
+      userId: user._id,
+    });
+    res.end();
   });
 };
 

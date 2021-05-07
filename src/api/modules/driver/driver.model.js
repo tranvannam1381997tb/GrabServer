@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const DriverSchema = mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-  },
   password: {
     type: String,
     required: true,
@@ -18,10 +14,26 @@ const DriverSchema = mongoose.Schema({
     required: true,
   },
   sex: {
-    type: String,
+    type: Number,
     required: true,
   },
   phoneNumber: {
+    type: String,
+    required: true,
+  },
+  licensePlateNumber: {
+    type: String,
+    required: true,
+  },
+  typeVehicle: {
+    type: String,
+    required: true,
+  },
+  typeDriver: {
+    type: Number,
+    required: true,
+  },
+  startDate: {
     type: String,
     required: true,
   },

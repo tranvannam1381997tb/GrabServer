@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
     }
     res.send({
       success: "Login successfully.",
-      driverId: driver._id,
+      driver: driver,
     });
     res.end();
   });

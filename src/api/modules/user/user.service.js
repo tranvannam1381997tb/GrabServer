@@ -61,7 +61,7 @@ exports.login = async (req, res) => {
     }
     res.send({
       success: "Login successfully.",
-      userId: user._id,
+      user: user,
     });
     res.end();
   });

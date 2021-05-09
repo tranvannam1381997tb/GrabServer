@@ -1,3 +1,12 @@
 module.exports = Object.freeze({
   GOOGLE_MAP_API_KEY: "AIzaSyD4uKs3ygHu0zrfIp9zjg5ioZ6COnjzIpc",
+  STATUS_OFF: -1,
+  STATUS_ON: 0,
+  STATUS_ARRIVING_ORIGIN: 1,
+  STATUS_GOING: 2,
+  STATUS_ARRIVED_DESTINATION: 3,
+  GRAB_BIKE: 0,
+  GRAB_CAR: 1,
+  MALE: 0,
+  FE_MALE: 1,
 });

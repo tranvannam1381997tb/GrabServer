@@ -13,4 +13,19 @@ router.route("/create").post(driverController.create);
  */
 router.route("/login").post(driverController.login);
 
+/**
+ * login for driver
+ */
+router.route("/arriving").post(driverController.arriving);
+
+/**
+ * login for driver
+ */
+router.route("/going").post(driverController.going);
+
+/**
+ * login for driver
+ */
+router.route("/cancel").post(driverController.cancel);
+
 module.exports = router;

@@ -1,7 +1,9 @@
 const User = require("./user.model");
+const Driver = require("../driver/driver.model");
 const axios = require("axios");
 const Constants = require("../../../utils/constants");
 const admin = require("firebase-admin");
+const { isValidObjectId } = require("mongoose");
 
 /**
  * create user
@@ -32,7 +34,7 @@ exports.create = async (req, res) => {
     status: 0,
     tokenId: "",
   });
-  res.send({ success: "Create successfully.", userId: userSaved._id });
+  res.send({ success: true, userId: userSaved._id });
   res.end();
 };
 
@@ -60,8 +62,14 @@ exports.login = async (req, res) => {
       return;
     }
     res.send({
-      success: "Login successfully.",
-      user: user,
+      success: true,
+      user: {
+        userId: user._id,
+        name: user.name,
+        age: user.age,
+        sex: user.sex,
+        phoneNumber: user.phoneNumber,
+      },
     });
     res.end();
   });
@@ -79,35 +87,159 @@ exports.findDrivers = async (req, res) => {
     res.send({ error: "Invalid payload." });
     return;
   }
-  const user = await User.find();
-  console.log(user);
-
-  // const origin = `21.0462746,105.7948588`;
-  // const destination = `20.9898719,105.7972325`;
-  // const googleMapUrl = "https://maps.googleapis.com/maps";
-  // const payload = {
-  //   origin: origin,
-  //   destination: destination,
-  //   key: Constants.GOOGLE_MAP_API_KEY,
-  // };
-  // const map = await axios.get(`${googleMapUrl}/api/directions/json`, {
-  //   params: payload,
-  // });
-  // console.log(map.data.routes[0].legs[0].distance);
-  // console.log(map.data.routes[0].legs[0].start_location);
-  // var db = admin.database();
-  // var ref = db.ref("drivers");
-  // ref
-  //   .orderByChild("status")
-  //   .equalTo(1)
-  //   .once(
-  //     "value",
-  //     (snapshot) => {
-  //       console.log(snapshot.val());
-  //     },
-  //     (error) => {
-  //       console.log("The read failed: " + error.code);
-  //     }
-  //   );
-  res.send({ mess: "Done." });
+  const db = admin.database();
+  let refUser = db.ref(`users/${userId}`);
+  await refUser.once("value", async (userData) => {
+    let drivers = [];
+    const user = userData.val();
+    let refDriver = db.ref("drivers");
+    await refDriver
+      .orderByChild("status")
+      .equalTo(Constants.STATUS_ON)
+      .once(
+        "value",
+        (driverData) => {
+          driverData.forEach((driver) => {
+            const driverValue = driver.val();
+            drivers.push({
+              driverId: driver.key,
+              latitude: driverValue.latitude,
+              longitude: driverValue.longitude,
+              status: driverValue.status,
+            });
+          });
+          console.log(drivers);
+        },
+        (error) => {
+          console.log("The read failed: " + error.code);
+        }
+      );
+    if (drivers.length == 0) {
+      res.send({ success: true, drivers: [] });
+      res.end();
+      return;
+    }
+    const googleMapUrl = "https://maps.googleapis.com/maps";
+    Promise.all(
+      drivers.map((driver) => {
+        return new Promise(async (resolve, reject) => {
+          let destination = `${driver.latitude},${driver.longitude}`;
+          const payload = {
+            origin: `${user.latitude},${user.longitude}`,
+            destination: destination,
+            key: Constants.GOOGLE_MAP_API_KEY,
+          };
+          const map = await axios.get(`${googleMapUrl}/api/directions/json`, {
+            params: payload,
+          });
+          driver["distanceOrigin"] = map.data.routes[0].legs[0].distance.value;
+          resolve();
+        });
+      })
+    ).then(() => {
+      let drivers1km = drivers
+        .filter((driver) => driver["distanceOrigin"] <= 1000)
+        .map((driver, index) => {
+          if (index <= 10) {
+            return driver;
+          }
+        });
+      if (drivers1km.length == 10) {
+        Driver.find({
+          _id: {
+            $in: drivers1km.map((driver) => {
+              return driver["driverId"];
+            }),
+          },
+        }).then((driversData) => {
+          drivers1km = driversData.map((driver) => {
+            return {
+              driverId: driver._id,
+              name: driver.name,
+              age: driver.age,
+              sex: driver.sex,
+              phoneNumber: driver.phoneNumber,
+              licensePlateNumber: driver.licensePlateNumber,
+              typeVehicle: driver.typeVehicle,
+              typeDriver: driver.typeDriver,
+              startDate: driver.startDate,
+              rate: driver.rate,
+              status: driver.status,
+            };
+          });
+          res.send({ success: true, drivers: drivers1km });
+          res.end();
+        });
+      } else {
+        let drivers2km = drivers
+          .filter((driver) => driver["distanceOrigin"] <= 2000)
+          .map((driver, index) => {
+            if (index <= 10) {
+              return driver;
+            }
+            console.log();
+          });
+        if (drivers2km.length == 10) {
+          Driver.find({
+            _id: {
+              $in: drivers2km.map((driver) => {
+                return driver["driverId"];
+              }),
+            },
+          }).then((driversData) => {
+            drivers2km = driversData.map((driver) => {
+              return {
+                driverId: driver._id,
+                name: driver.name,
+                age: driver.age,
+                sex: driver.sex,
+                phoneNumber: driver.phoneNumber,
+                licensePlateNumber: driver.licensePlateNumber,
+                typeVehicle: driver.typeVehicle,
+                typeDriver: driver.typeDriver,
+                startDate: driver.startDate,
+                rate: driver.rate,
+                status: driver.status,
+              };
+            });
+            res.send({ success: true, drivers: drivers2km });
+            res.end();
+          });
+        } else {
+          let drivers5km = drivers
+            .filter((driver) => driver["distanceOrigin"] <= 5000)
+            .map((driver, index) => {
+              if (index <= 10) {
+                return driver;
+              }
+            });
+          Driver.find({
+            _id: {
+              $in: drivers5km.map((driver) => {
+                return driver["driverId"];
+              }),
+            },
+          }).then((driversData) => {
+            drivers5km = driversData.map((driver) => {
+              return {
+                driverId: driver._id,
+                name: driver.name,
+                age: driver.age,
+                sex: driver.sex,
+                phoneNumber: driver.phoneNumber,
+                licensePlateNumber: driver.licensePlateNumber,
+                typeVehicle: driver.typeVehicle,
+                typeDriver: driver.typeDriver,
+                startDate: driver.startDate,
+                rate: driver.rate,
+                status: driver.status,
+              };
+            });
+            res.send({ success: true, drivers: drivers5km });
+            res.end();
+          });
+        }
+      }
+    });
+  });
 };

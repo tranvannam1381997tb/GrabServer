@@ -37,6 +37,14 @@ const DriverSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  rate: {
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: Number,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Driver", DriverSchema, "drivers_collection");

@@ -35,6 +35,7 @@ exports.create = async (req, res) => {
   driverNew.startDate = DateTime.now();
   driverNew.rate = 5;
   driverNew.status = Constants.STATUS_ON;
+  driverNew.totalBook = 0;
   const driverSaved = await driverNew.save();
   const driverRef = admin.database().ref(`drivers/${driverSaved._id}`);
   await driverRef.set({
@@ -151,6 +152,7 @@ exports.login = async (req, res) => {
         startDate: driver.startDate,
         rate: driver.rate,
         status: Constants.STATUS_ON,
+        totalBook: driver.totalBook,
       },
     });
     res.end();
@@ -158,12 +160,12 @@ exports.login = async (req, res) => {
 };
 
 /**
- * arriving
+ * arriving origin
  *
  * @param {*} req
  * @param {*} res
  */
-exports.arriving = async (req, res) => {
+exports.arrivingOrigin = async (req, res) => {
   const driverInfo = req.body;
   // update to firebase
   const driverRef = admin.database().ref(`drivers/${driverInfo.driverId}`);
@@ -182,23 +184,99 @@ exports.arriving = async (req, res) => {
 };
 
 /**
- * going
+ * arrived origin
  *
  * @param {*} req
  * @param {*} res
  */
-exports.going = async (req, res) => {
+exports.arrivedOrigin = async (req, res) => {
   const driverInfo = req.body;
   // update to firebase
   const driverRef = admin.database().ref(`drivers/${driverInfo.driverId}`);
   await driverRef.update({
-    status: Constants.STATUS_GOING,
+    status: Constants.STATUS_ARRIVED_ORIGIN,
   });
   // update to mongodb
   await Driver.updateOne(
     { _id: driverInfo.driverId },
     {
-      status: Constants.STATUS_GOING,
+      status: Constants.STATUS_ARRIVED_ORIGIN,
+    }
+  );
+  res.send({ success: true });
+  res.end();
+};
+
+/**
+ * arriving destination
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+exports.arrivingDestination = async (req, res) => {
+  const driverInfo = req.body;
+  // update to firebase
+  const driverRef = admin.database().ref(`drivers/${driverInfo.driverId}`);
+  await driverRef.update({
+    status: Constants.STATUS_ARRIVING_DESTINATION,
+  });
+  // update to mongodb
+  await Driver.updateOne(
+    { _id: driverInfo.driverId },
+    {
+      status: Constants.STATUS_ARRIVING_DESTINATION,
+    }
+  );
+  res.send({ success: true });
+  res.end();
+};
+
+/**
+ * arrived destination
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+exports.arrivedDestination = async (req, res) => {
+  const driverInfo = req.body;
+  // update to firebase
+  const driverRef = admin.database().ref(`drivers/${driverInfo.driverId}`);
+  await driverRef.update({
+    status: Constants.STATUS_ARRIVED_DESTINATION,
+  });
+  // update to mongodb
+  await Driver.updateOne(
+    { _id: driverInfo.driverId },
+    {
+      status: Constants.STATUS_ARRIVED_DESTINATION,
+    }
+  );
+  res.send({ success: true });
+  res.end();
+};
+
+/**
+ * billing
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+exports.billing = async (req, res) => {
+  const driverInfo = req.body;
+  // update to firebase
+  const driverRef = admin.database().ref(`drivers/${driverInfo.driverId}`);
+  let driver = await Driver.findOne({
+    _id: driverInfo.driverId,
+  });
+  await driverRef.update({
+    status: Constants.STATUS_ON,
+  });
+  // update to mongodb
+  await Driver.updateOne(
+    { _id: driverInfo.driverId },
+    {
+      status: Constants.STATUS_ON,
+      totalBook: ++driver.totalBook,
     }
   );
   res.send({ success: true });

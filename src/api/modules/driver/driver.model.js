@@ -45,6 +45,10 @@ const DriverSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  totalBook: {
+    type: Number,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Driver", DriverSchema, "drivers_collection");

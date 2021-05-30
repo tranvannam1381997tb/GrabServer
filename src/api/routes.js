@@ -9,4 +9,7 @@ router.use("/driver", driverRoutes);
 const userRoutes = require("./modules/user/user.routes");
 router.use("/user", userRoutes);
 
+const policyRoutes = require("./modules/policy/policy.routes");
+router.use("/policy", policyRoutes);
+
 module.exports = router;

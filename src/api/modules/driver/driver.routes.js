@@ -14,14 +14,31 @@ router.route("/create").post(driverController.create);
 router.route("/login").post(driverController.login);
 
 /**
- * login for driver
+ * arriving origin
  */
-router.route("/arriving").post(driverController.arriving);
+router.route("/arriving-origin").post(driverController.arrivingOrigin);
 
 /**
- * login for driver
+ * arrived origin
  */
-router.route("/going").post(driverController.going);
+router.route("/arrived-origin").post(driverController.arrivedOrigin);
+
+/**
+ * arriving destination
+ */
+router
+  .route("/arriving-destination")
+  .post(driverController.arrivingDestination);
+
+/**
+ * arrived destination
+ */
+router.route("/arrived-destination").post(driverController.arrivedDestination);
+
+/**
+ * arrived destination
+ */
+ router.route("/billing").post(driverController.billing);
 
 /**
  * login for driver

@@ -107,7 +107,7 @@ exports.findDrivers = async (req, res) => {
               status: driverValue.status,
             });
           });
-          console.log(drivers);
+          // console.log(drivers);
         },
         (error) => {
           console.log("The read failed: " + error.code);
@@ -151,7 +151,13 @@ exports.findDrivers = async (req, res) => {
             return driver;
           }
         });
-      if (drivers1km.length == Constants.DRIVER_LIST_SIZE) {
+      if (drivers1km.length >= Constants.DRIVER_LIST_SIZE) {
+        drivers1km = drivers1km
+          .sort(
+            (driver1, driver2) =>
+              driver1["distanceOrigin"] - driver2["distanceOrigin"]
+          )
+          .splice(0, Constants.DRIVER_LIST_SIZE);
         Driver.find({
           _id: {
             $in: drivers1km.map((driver) => {
@@ -173,11 +179,12 @@ exports.findDrivers = async (req, res) => {
               rate: driver.rate,
               status: driver.status,
               distance:
-                drivers1km.find((driverA) => driverA._id == driver._id)[
+                drivers1km.find((driverA) => driverA.driverId == driver._id)[
                   "distanceOrigin"
                 ] / 1000,
             };
           });
+          console.log(responseDrivers);
           res.send({ success: true, drivers: responseDrivers });
           res.end();
         });
@@ -191,9 +198,14 @@ exports.findDrivers = async (req, res) => {
             if (index <= Constants.DRIVER_LIST_SIZE) {
               return driver;
             }
-            console.log();
           });
-        if (drivers2km.length == Constants.DRIVER_LIST_SIZE) {
+        if (drivers2km.length >= Constants.DRIVER_LIST_SIZE) {
+          drivers2km = drivers2km
+            .sort(
+              (driver1, driver2) =>
+                driver1["distanceOrigin"] - driver2["distanceOrigin"]
+            )
+            .splice(0, Constants.DRIVER_LIST_SIZE);
           Driver.find({
             _id: {
               $in: drivers2km.map((driver) => {
@@ -215,7 +227,7 @@ exports.findDrivers = async (req, res) => {
                 rate: driver.rate,
                 status: driver.status,
                 distance:
-                  drivers2km.find((driverA) => driverA._id == driver._id)[
+                  drivers2km.find((driverA) => driverA.driverId == driver._id)[
                     "distanceOrigin"
                   ] / 1000,
               };
@@ -255,7 +267,7 @@ exports.findDrivers = async (req, res) => {
                 rate: driver.rate,
                 status: driver.status,
                 distance:
-                  drivers5km.find((driverA) => driverA._id == driver._id)[
+                  drivers5km.find((driverA) => driverA.driverId == driver._id)[
                     "distanceOrigin"
                   ] / 1000,
               };

@@ -3,7 +3,6 @@ const Driver = require("../driver/driver.model");
 const axios = require("axios");
 const Constants = require("../../../utils/constants");
 const admin = require("firebase-admin");
-const { isValidObjectId } = require("mongoose");
 
 /**
  * create user
@@ -160,7 +159,7 @@ exports.findDrivers = async (req, res) => {
             }),
           },
         }).then((driversData) => {
-          drivers1km = driversData.map((driver) => {
+          const responseDrivers = driversData.map((driver) => {
             return {
               driverId: driver._id,
               name: driver.name,
@@ -173,9 +172,13 @@ exports.findDrivers = async (req, res) => {
               startDate: driver.startDate,
               rate: driver.rate,
               status: driver.status,
+              distance:
+                drivers1km.find((driverA) => driverA._id == driver._id)[
+                  "distanceOrigin"
+                ] / 1000,
             };
           });
-          res.send({ success: true, drivers: drivers1km });
+          res.send({ success: true, drivers: responseDrivers });
           res.end();
         });
       } else {
@@ -198,7 +201,7 @@ exports.findDrivers = async (req, res) => {
               }),
             },
           }).then((driversData) => {
-            drivers2km = driversData.map((driver) => {
+            const responseDrivers = driversData.map((driver) => {
               return {
                 driverId: driver._id,
                 name: driver.name,
@@ -211,9 +214,13 @@ exports.findDrivers = async (req, res) => {
                 startDate: driver.startDate,
                 rate: driver.rate,
                 status: driver.status,
+                distance:
+                  drivers2km.find((driverA) => driverA._id == driver._id)[
+                    "distanceOrigin"
+                  ] / 1000,
               };
             });
-            res.send({ success: true, drivers: drivers2km });
+            res.send({ success: true, drivers: responseDrivers });
             res.end();
           });
         } else {
@@ -234,7 +241,7 @@ exports.findDrivers = async (req, res) => {
               }),
             },
           }).then((driversData) => {
-            drivers5km = driversData.map((driver) => {
+            const responseDrivers = driversData.map((driver) => {
               return {
                 driverId: driver._id,
                 name: driver.name,
@@ -247,9 +254,13 @@ exports.findDrivers = async (req, res) => {
                 startDate: driver.startDate,
                 rate: driver.rate,
                 status: driver.status,
+                distance:
+                  drivers5km.find((driverA) => driverA._id == driver._id)[
+                    "distanceOrigin"
+                  ] / 1000,
               };
             });
-            res.send({ success: true, drivers: drivers5km });
+            res.send({ success: true, drivers: responseDrivers });
             res.end();
           });
         }

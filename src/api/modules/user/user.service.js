@@ -132,19 +132,27 @@ exports.findDrivers = async (req, res) => {
           const map = await axios.get(`${googleMapUrl}/api/directions/json`, {
             params: payload,
           });
-          driver["distanceOrigin"] = map.data.routes[0].legs[0].distance.value;
+          if (map.data.status == "OK") {
+            if (map.data.routes && map.data.routes.length > 0) {
+              driver["distanceOrigin"] =
+                map.data.routes[0].legs[0].distance.value;
+            }
+          }
           resolve();
         });
       })
     ).then(() => {
       let drivers1km = drivers
-        .filter((driver) => driver["distanceOrigin"] <= 1000)
+        .filter(
+          (driver) =>
+            driver["distanceOrigin"] && driver["distanceOrigin"] <= 1000
+        )
         .map((driver, index) => {
-          if (index <= 10) {
+          if (index <= Constants.DRIVER_LIST_SIZE) {
             return driver;
           }
         });
-      if (drivers1km.length == 10) {
+      if (drivers1km.length == Constants.DRIVER_LIST_SIZE) {
         Driver.find({
           _id: {
             $in: drivers1km.map((driver) => {
@@ -172,14 +180,17 @@ exports.findDrivers = async (req, res) => {
         });
       } else {
         let drivers2km = drivers
-          .filter((driver) => driver["distanceOrigin"] <= 2000)
+          .filter(
+            (driver) =>
+              driver["distanceOrigin"] && driver["distanceOrigin"] <= 2000
+          )
           .map((driver, index) => {
-            if (index <= 10) {
+            if (index <= Constants.DRIVER_LIST_SIZE) {
               return driver;
             }
             console.log();
           });
-        if (drivers2km.length == 10) {
+        if (drivers2km.length == Constants.DRIVER_LIST_SIZE) {
           Driver.find({
             _id: {
               $in: drivers2km.map((driver) => {
@@ -207,9 +218,12 @@ exports.findDrivers = async (req, res) => {
           });
         } else {
           let drivers5km = drivers
-            .filter((driver) => driver["distanceOrigin"] <= 5000)
+            .filter(
+              (driver) =>
+                driver["distanceOrigin"] && driver["distanceOrigin"] <= 5000
+            )
             .map((driver, index) => {
-              if (index <= 10) {
+              if (index <= Constants.DRIVER_LIST_SIZE) {
                 return driver;
               }
             });

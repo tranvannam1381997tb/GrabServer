@@ -28,4 +28,14 @@ router.route("/going").post(driverController.going);
  */
 router.route("/cancel").post(driverController.cancel);
 
+/**
+ * update status for driver
+ */
+router.route("/update-status").post(driverController.updateStatus);
+
+/**
+ * update status for driver
+ */
+router.route("/logout").post(driverController.logout);
+
 module.exports = router;

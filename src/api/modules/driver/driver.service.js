@@ -2,6 +2,11 @@ const Driver = require("./driver.model");
 const admin = require("firebase-admin");
 const Constants = require("../../../utils/constants");
 var { DateTime } = require("luxon");
+const { timer, Subject, pipe, async } = require("rxjs");
+const { startWith, switchMap, takeUntil } = require("rxjs/operators");
+
+const pauseTimerCheckStatusSubject = new Subject();
+const resetTimerCheckStatusSubject = new Subject();
 
 /**
  * create driver
@@ -38,6 +43,7 @@ exports.create = async (req, res) => {
     status: driverSaved.status,
     tokenId: "",
   });
+  this.changeStatus(driverSaved);
   res.send({ success: true, driverId: driverSaved._id });
   res.end();
 };
@@ -77,6 +83,60 @@ exports.login = async (req, res) => {
         status: Constants.STATUS_ON,
       }
     );
+    this.changeStatus(driver);
+    // const resetTimer = new Subject();
+    // const pauseTimer = new Subject();
+    // resetTimer
+    //   .pipe(
+    //     startWith(0),
+    //     switchMap(() => timer(0, 1000)),
+    //     takeUntil(pauseTimer)
+    //   )
+    //   .subscribe(async (val) => {
+    //     if (val > 60) {
+    //       Driver.findById(driver._id).then(async (driverData) => {
+    //         if (driverData.status == Constants.STATUS_ON) {
+    //           // update to firebase
+    //           await driverRef.update({
+    //             status: Constants.STATUS_OFF,
+    //           });
+    //           // update to mongodb
+    //           await Driver.updateOne(
+    //             { _id: driver._id },
+    //             {
+    //               status: Constants.STATUS_OFF,
+    //             }
+    //           );
+    //         }
+    //       });
+    //     }
+    //   });
+    // resetTimerCheckStatusSubject.subscribe((val) => {
+    //   if (val == driver._id) {
+    //     Driver.findById(val).then(async (driverData) => {
+    //       if (driverData.status == Constants.STATUS_OFF) {
+    //         // update to firebase
+    //         await driverRef.update({
+    //           status: Constants.STATUS_ON,
+    //         });
+    //         // update to mongodb
+    //         await Driver.updateOne(
+    //           { _id: driver._id },
+    //           {
+    //             status: Constants.STATUS_ON,
+    //           }
+    //         );
+    //       }
+    //       resetTimer.next();
+    //     });
+    //   }
+    // });
+    // pauseTimerCheckStatusSubject.subscribe((val) => {
+    //   if (val == driver._id) {
+    //     pauseTimer.next();
+    //     pauseTimer.unsubscribe();
+    //   }
+    // });
     res.send({
       success: true,
       driver: {
@@ -123,7 +183,7 @@ exports.arriving = async (req, res) => {
 
 /**
  * going
- * 
+ *
  * @param {*} req
  * @param {*} res
  */
@@ -150,4 +210,105 @@ exports.going = async (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-exports.cancel = async (req, res) => {};
+exports.cancel = async (req, res) => {
+  res.send({ success: true });
+};
+
+/**
+ * update status
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+exports.updateStatus = (req, res) => {
+  const driverId = req.body.driverId;
+  resetTimerCheckStatusSubject.next(driverId);
+  res.send({ success: true });
+};
+
+/**
+ * logout
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+exports.logout = (req, res) => {
+  const driverId = req.body.driverId;
+  pauseTimerCheckStatusSubject.next(driverId);
+  res.send({ success: true });
+};
+
+/**
+ *
+ * @param {*} driver
+ */
+exports.changeStatus = (driver) => {
+  const driverRef = admin.database().ref(`drivers/${driver._id}`);
+  const resetTimer = new Subject();
+  const pauseTimer = new Subject();
+  const subscription = resetTimer
+    .pipe(
+      startWith(0),
+      switchMap(() => timer(0, 1000)),
+      takeUntil(pauseTimer)
+    )
+    .subscribe(async (val) => {
+      if (val > 60) {
+        Driver.findById(driver._id).then(async (driverData) => {
+          if (driverData.status == Constants.STATUS_ON) {
+            // update to firebase
+            await driverRef.update({
+              status: Constants.STATUS_OFF,
+            });
+            // update to mongodb
+            await Driver.updateOne(
+              { _id: driver._id },
+              {
+                status: Constants.STATUS_OFF,
+              }
+            );
+          }
+        });
+      }
+    });
+  resetTimerCheckStatusSubject.subscribe((val) => {
+    if (val == driver._id) {
+      Driver.findById(val).then(async (driverData) => {
+        if (driverData.status == Constants.STATUS_OFF) {
+          // update to firebase
+          await driverRef.update({
+            status: Constants.STATUS_ON,
+          });
+          // update to mongodb
+          await Driver.updateOne(
+            { _id: driver._id },
+            {
+              status: Constants.STATUS_ON,
+            }
+          );
+        }
+        resetTimer.next();
+      });
+    }
+  });
+  pauseTimerCheckStatusSubject.subscribe((val) => {
+    if (val == driver._id) {
+      Driver.findById(val).then(async (driverData) => {
+        if (driverData.status == Constants.STATUS_ON) {
+          // update to firebase
+          await driverRef.update({
+            status: Constants.STATUS_OFF,
+          });
+          // update to mongodb
+          await Driver.updateOne(
+            { _id: driver._id },
+            {
+              status: Constants.STATUS_OFF,
+            }
+          );
+        }
+      });
+      subscription.unsubscribe();
+    }
+  });
+};

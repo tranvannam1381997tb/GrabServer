@@ -9,4 +9,5 @@ module.exports = Object.freeze({
   GRAB_CAR: 1,
   MALE: 0,
   FE_MALE: 1,
+  DRIVER_LIST_SIZE: 5,
 });

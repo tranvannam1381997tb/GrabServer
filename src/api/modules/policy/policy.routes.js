@@ -4,12 +4,12 @@ const router = express.Router();
 const policyController = require("./policy.controller");
 
 /**
- * get policy
+ * create policy
  */
 router.route("/create").put(policyController.createPolicy);
 
 /**
- * get policy
+ * update policy
  */
 router.route("/update").post(policyController.updatePolicy);
 
@@ -18,4 +18,4 @@ router.route("/update").post(policyController.updatePolicy);
  */
 router.route("/get").get(policyController.getPolicy);
 
-module.exports = router;
+module.exports = router; 

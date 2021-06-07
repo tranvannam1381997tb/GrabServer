@@ -36,7 +36,7 @@ exports.createPolicy = async (req, res) => {
     }
     policys.push(policy);
   }
-  Policy.insertMany(policys).then((data) => {
+  Policy.insertMany(policys).then(() => {
     res.send({ success: true });
     res.end();
   });
@@ -46,23 +46,22 @@ exports.updatePolicy = async (req, res) => {
   res.end();
 };
 
+const peakHoursFrom1 = DateTime.fromFormat("07:00", "HH:mm").toMillis();
+const peakHoursTo1 = DateTime.fromFormat("09:00", "HH:mm").toMillis();
+const peakHoursFrom2 = DateTime.fromFormat("17:00", "HH:mm").toMillis();
+const peakHoursTo2 = DateTime.fromFormat("19:00", "HH:mm").toMillis();
+const lateHoursFrom = DateTime.fromFormat("22:00", "HH:mm").toMillis();
+const lateHoursTo = DateTime.fromFormat("06:00", "HH:mm").toMillis();
+
 exports.getPolicy = async (req, res) => {
   const now = DateTime.now().toMillis();
-  let peakHoursFrom1 = DateTime.fromFormat("07:00", "HH:mm").toMillis();
-  let peakHoursTo1 = DateTime.fromFormat("09:00", "HH:mm").toMillis();
-  let peakHoursFrom2 = DateTime.fromFormat("17:00", "HH:mm").toMillis();
-  let peakHoursTo2 = DateTime.fromFormat("19:00", "HH:mm").toMillis();
-  let lateHoursFrom = DateTime.fromFormat("22:00", "HH:mm").toMillis();
-  let lateHoursTo = DateTime.fromFormat("06:00", "HH:mm")
-    .plus({ days: 1 })
-    .toMillis();
   let timeFrame;
   if (
     (now >= peakHoursFrom1 && now <= peakHoursTo1) ||
     (now >= peakHoursFrom2 && now <= peakHoursTo2)
   ) {
     timeFrame = 1;
-  } else if (now >= lateHoursFrom && now <= lateHoursTo) {
+  } else if (now >= lateHoursFrom || now <= lateHoursTo) {
     timeFrame = 2;
   } else {
     timeFrame = 0;

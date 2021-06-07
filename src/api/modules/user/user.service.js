@@ -178,7 +178,17 @@ exports.findDrivers = async (req, res) => {
                 distance: driver1km["distanceOrigin"] / 1000,
               };
             });
-            res.send({ success: true, drivers: responseDrivers });
+            res.send({
+              success: true,
+              drivers: {
+                bikes: responseDrivers.filter(
+                  (driver) => driver.typeDriver == Constants.GRAB_BIKE
+                ),
+                cars: responseDrivers.filter(
+                  (driver) => driver.typeDriver == Constants.GRAB_CAR
+                ),
+              },
+            });
             res.end();
           } else {
             let drivers2km = firebaseDrivers.filter(
@@ -212,7 +222,17 @@ exports.findDrivers = async (req, res) => {
                   distance: driver2km["distanceOrigin"] / 1000,
                 };
               });
-              res.send({ success: true, drivers: responseDrivers });
+              res.send({
+                success: true,
+                drivers: {
+                  bikes: responseDrivers.filter(
+                    (driver) => driver.typeDriver == Constants.GRAB_BIKE
+                  ),
+                  cars: responseDrivers.filter(
+                    (driver) => driver.typeDriver == Constants.GRAB_CAR
+                  ),
+                },
+              });
               res.end();
             } else {
               let drivers5km = firebaseDrivers.filter(
@@ -239,8 +259,17 @@ exports.findDrivers = async (req, res) => {
                   distance: driver5km["distanceOrigin"] / 1000,
                 };
               });
-              console.log(responseDrivers);
-              res.send({ success: true, drivers: responseDrivers });
+              res.send({
+                success: true,
+                drivers: {
+                  bikes: responseDrivers.filter(
+                    (driver) => driver.typeDriver == Constants.GRAB_BIKE
+                  ),
+                  cars: responseDrivers.filter(
+                    (driver) => driver.typeDriver == Constants.GRAB_CAR
+                  ),
+                },
+              });
               res.end();
             }
           }

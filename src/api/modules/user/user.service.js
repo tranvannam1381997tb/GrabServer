@@ -117,7 +117,7 @@ exports.findDrivers = async (req, res) => {
           });
         });
         if (firebaseDrivers.length == 0) {
-          res.send({ success: true, drivers: [] });
+          res.send({ success: true, drivers: { GrabBike: [], GrabCar: [] } });
           res.end();
           return;
         }
@@ -147,132 +147,69 @@ exports.findDrivers = async (req, res) => {
             });
           })
         ).then(() => {
-          let drivers1km = firebaseDrivers.filter(
-            (driver) =>
-              driver["distanceOrigin"] && driver["distanceOrigin"] <= 1000
-          );
-          if (drivers1km.length >= Constants.DRIVER_LIST_SIZE) {
-            drivers1km = drivers1km
-              .sort(
-                (driver1, driver2) =>
-                  driver1["distanceOrigin"] - driver2["distanceOrigin"]
-              )
-              .splice(0, Constants.DRIVER_LIST_SIZE);
-            const responseDrivers = drivers1km.map((driver1km) => {
-              const driverResponse = drivers.find(
-                (driver) => driver._id == driver1km.driverId
-              );
-              return {
-                driverId: driverResponse._id,
-                name: driverResponse.name,
-                age: driverResponse.age,
-                sex: driverResponse.sex,
-                phoneNumber: driverResponse.phoneNumber,
-                licensePlateNumber: driverResponse.licensePlateNumber,
-                typeVehicle: driverResponse.typeVehicle,
-                typeDriver: driverResponse.typeDriver,
-                startDate: driverResponse.startDate,
-                rate: driverResponse.rate,
-                status: driverResponse.status,
-                totalBook: driverResponse.totalBook,
-                distance: driver1km["distanceOrigin"] / 1000,
-              };
-            });
-            res.send({
-              success: true,
-              drivers: {
-                bikes: responseDrivers.filter(
-                  (driver) => driver.typeDriver == Constants.GRAB_BIKE
-                ),
-                cars: responseDrivers.filter(
-                  (driver) => driver.typeDriver == Constants.GRAB_CAR
-                ),
-              },
-            });
-            res.end();
-          } else {
-            let drivers2km = firebaseDrivers.filter(
-              (driver) =>
-                driver["distanceOrigin"] && driver["distanceOrigin"] <= 2000
+          const allDrivers = firebaseDrivers
+            .filter((driver) => driver["distanceOrigin"])
+            .sort(
+              (driver1, driver2) =>
+                driver1["distanceOrigin"] - driver2["distanceOrigin"]
             );
-            if (drivers2km.length >= Constants.DRIVER_LIST_SIZE) {
-              drivers2km = drivers2km
-                .sort(
-                  (driver1, driver2) =>
-                    driver1["distanceOrigin"] - driver2["distanceOrigin"]
-                )
-                .splice(0, Constants.DRIVER_LIST_SIZE);
-              const responseDrivers = drivers2km.map((driver2km) => {
-                const driverResponse = drivers.find(
-                  (driver) => driver._id == driver2km.driverId
-                );
-                return {
-                  driverId: driverResponse._id,
-                  name: driverResponse.name,
-                  age: driverResponse.age,
-                  sex: driverResponse.sex,
-                  phoneNumber: driverResponse.phoneNumber,
-                  licensePlateNumber: driverResponse.licensePlateNumber,
-                  typeVehicle: driverResponse.typeVehicle,
-                  typeDriver: driverResponse.typeDriver,
-                  startDate: driverResponse.startDate,
-                  rate: driverResponse.rate,
-                  status: driverResponse.status,
-                  totalBook: driverResponse.totalBook,
-                  distance: driver2km["distanceOrigin"] / 1000,
-                };
-              });
-              res.send({
-                success: true,
-                drivers: {
-                  bikes: responseDrivers.filter(
-                    (driver) => driver.typeDriver == Constants.GRAB_BIKE
-                  ),
-                  cars: responseDrivers.filter(
-                    (driver) => driver.typeDriver == Constants.GRAB_CAR
-                  ),
-                },
-              });
-              res.end();
-            } else {
-              let drivers5km = firebaseDrivers.filter(
-                (driver) =>
-                  driver["distanceOrigin"] && driver["distanceOrigin"] <= 5000
-              );
-              const responseDrivers = drivers5km.map((driver5km) => {
-                const driverResponse = drivers.find(
-                  (driver) => driver._id == driver5km.driverId
-                );
-                return {
-                  driverId: driverResponse._id,
-                  name: driverResponse.name,
-                  age: driverResponse.age,
-                  sex: driverResponse.sex,
-                  phoneNumber: driverResponse.phoneNumber,
-                  licensePlateNumber: driverResponse.licensePlateNumber,
-                  typeVehicle: driverResponse.typeVehicle,
-                  typeDriver: driverResponse.typeDriver,
-                  startDate: driverResponse.startDate,
-                  rate: driverResponse.rate,
-                  status: driverResponse.status,
-                  totalBook: driverResponse.totalBook,
-                  distance: driver5km["distanceOrigin"] / 1000,
-                };
-              });
-              res.send({
-                success: true,
-                drivers: {
-                  bikes: responseDrivers.filter(
-                    (driver) => driver.typeDriver == Constants.GRAB_BIKE
-                  ),
-                  cars: responseDrivers.filter(
-                    (driver) => driver.typeDriver == Constants.GRAB_CAR
-                  ),
-                },
-              });
-              res.end();
-            }
+          let grabBikes = allDrivers.filter(
+            (driver) => driver.typeDriver == Constants.GRAB_BIKE
+          );
+          let grabCars = allDrivers.filter(
+            (driver) => driver.typeDriver == Constants.GRAB_CAR
+          );
+          if (grabBikes >= Constants.DRIVER_LIST_SIZE) {
+            grabBikes = grabBikes.splice(0, Constants.DRIVER_LIST_SIZE);
           }
+          if (grabCars >= Constants.DRIVER_LIST_SIZE) {
+            grabCars = grabCars.splice(0, Constants.DRIVER_LIST_SIZE);
+          }
+          const grabBikesresponse = grabBikes.map((grabBike) => {
+            const grabBikeResponse = drivers.find(
+              (driver) => driver._id == grabBike.driverId
+            );
+            return {
+              driverId: grabBikeResponse._id,
+              name: grabBikeResponse.name,
+              age: grabBikeResponse.age,
+              sex: grabBikeResponse.sex,
+              phoneNumber: grabBikeResponse.phoneNumber,
+              licensePlateNumber: grabBikeResponse.licensePlateNumber,
+              typeVehicle: grabBikeResponse.typeVehicle,
+              typeDriver: grabBikeResponse.typeDriver,
+              startDate: grabBikeResponse.startDate,
+              rate: grabBikeResponse.rate,
+              status: grabBikeResponse.status,
+              totalBook: grabBikeResponse.totalBook,
+              distance: driver1km["distanceOrigin"] / 1000,
+            };
+          });
+          const grabCarsresponse = grabCars.map((grabCar) => {
+            const grabCarResponse = drivers.find(
+              (driver) => driver._id == grabCar.driverId
+            );
+            return {
+              driverId: grabCarResponse._id,
+              name: grabCarResponse.name,
+              age: grabCarResponse.age,
+              sex: grabCarResponse.sex,
+              phoneNumber: grabCarResponse.phoneNumber,
+              licensePlateNumber: grabCarResponse.licensePlateNumber,
+              typeVehicle: grabCarResponse.typeVehicle,
+              typeDriver: grabCarResponse.typeDriver,
+              startDate: grabCarResponse.startDate,
+              rate: grabCarResponse.rate,
+              status: grabCarResponse.status,
+              totalBook: grabCarResponse.totalBook,
+              distance: driver1km["distanceOrigin"] / 1000,
+            };
+          });
+          res.send({
+            success: true,
+            drivers: { GrabBike: grabBikesresponse, GrabCar: grabCarsresponse },
+          });
+          res.end();
         });
       },
       (error) => {

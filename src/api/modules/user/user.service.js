@@ -148,63 +148,50 @@ exports.findDrivers = async (req, res) => {
           })
         ).then(() => {
           const allDrivers = firebaseDrivers
+            .map((firebaseDriver) => {
+              const driver = drivers.find(
+                (drv) => drv._id == firebaseDriver.driverId
+              );
+              return {
+                driverId: driver._id,
+                name: driver.name,
+                age: driver.age,
+                sex: driver.sex,
+                phoneNumber: driver.phoneNumber,
+                licensePlateNumber: driver.licensePlateNumber,
+                typeVehicle: driver.typeVehicle,
+                typeDriver: driver.typeDriver,
+                startDate: driver.startDate,
+                rate: driver.rate,
+                status: driver.status,
+                totalBook: driver.totalBook,
+                distanceOrigin: firebaseDriver["distanceOrigin"],
+                distance: firebaseDriver["distanceOrigin"] / 1000,
+              };
+            })
             .filter((driver) => driver["distanceOrigin"])
             .sort(
               (driver1, driver2) =>
                 driver1["distanceOrigin"] - driver2["distanceOrigin"]
             );
-          let grabBikes = allDrivers.filter(
+          let grabBikesresponse = allDrivers.filter(
             (driver) => driver.typeDriver == Constants.GRAB_BIKE
           );
-          let grabCars = allDrivers.filter(
+          let grabCarsresponse = allDrivers.filter(
             (driver) => driver.typeDriver == Constants.GRAB_CAR
           );
-          if (grabBikes >= Constants.DRIVER_LIST_SIZE) {
-            grabBikes = grabBikes.splice(0, Constants.DRIVER_LIST_SIZE);
-          }
-          if (grabCars >= Constants.DRIVER_LIST_SIZE) {
-            grabCars = grabCars.splice(0, Constants.DRIVER_LIST_SIZE);
-          }
-          const grabBikesresponse = grabBikes.map((grabBike) => {
-            const grabBikeResponse = drivers.find(
-              (driver) => driver._id == grabBike.driverId
+          if (grabBikesresponse >= Constants.DRIVER_LIST_SIZE) {
+            grabBikesresponse = grabBikesresponse.splice(
+              0,
+              Constants.DRIVER_LIST_SIZE
             );
-            return {
-              driverId: grabBikeResponse._id,
-              name: grabBikeResponse.name,
-              age: grabBikeResponse.age,
-              sex: grabBikeResponse.sex,
-              phoneNumber: grabBikeResponse.phoneNumber,
-              licensePlateNumber: grabBikeResponse.licensePlateNumber,
-              typeVehicle: grabBikeResponse.typeVehicle,
-              typeDriver: grabBikeResponse.typeDriver,
-              startDate: grabBikeResponse.startDate,
-              rate: grabBikeResponse.rate,
-              status: grabBikeResponse.status,
-              totalBook: grabBikeResponse.totalBook,
-              distance: driver1km["distanceOrigin"] / 1000,
-            };
-          });
-          const grabCarsresponse = grabCars.map((grabCar) => {
-            const grabCarResponse = drivers.find(
-              (driver) => driver._id == grabCar.driverId
+          }
+          if (grabCarsresponse >= Constants.DRIVER_LIST_SIZE) {
+            grabCarsresponse = grabCarsresponse.splice(
+              0,
+              Constants.DRIVER_LIST_SIZE
             );
-            return {
-              driverId: grabCarResponse._id,
-              name: grabCarResponse.name,
-              age: grabCarResponse.age,
-              sex: grabCarResponse.sex,
-              phoneNumber: grabCarResponse.phoneNumber,
-              licensePlateNumber: grabCarResponse.licensePlateNumber,
-              typeVehicle: grabCarResponse.typeVehicle,
-              typeDriver: grabCarResponse.typeDriver,
-              startDate: grabCarResponse.startDate,
-              rate: grabCarResponse.rate,
-              status: grabCarResponse.status,
-              totalBook: grabCarResponse.totalBook,
-              distance: driver1km["distanceOrigin"] / 1000,
-            };
-          });
+          }
           res.send({
             success: true,
             drivers: { GrabBike: grabBikesresponse, GrabCar: grabCarsresponse },

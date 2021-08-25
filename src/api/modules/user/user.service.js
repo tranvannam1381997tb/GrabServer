@@ -180,13 +180,13 @@ exports.findDrivers = async (req, res) => {
           let grabCarsresponse = allDrivers.filter(
             (driver) => driver.typeDriver == Constants.GRAB_CAR
           );
-          if (grabBikesresponse >= Constants.DRIVER_LIST_SIZE) {
+          if (grabBikesresponse.length >= Constants.DRIVER_LIST_SIZE) {
             grabBikesresponse = grabBikesresponse.splice(
               0,
               Constants.DRIVER_LIST_SIZE
             );
           }
-          if (grabCarsresponse >= Constants.DRIVER_LIST_SIZE) {
+          if (grabCarsresponse.length >= Constants.DRIVER_LIST_SIZE) {
             grabCarsresponse = grabCarsresponse.splice(
               0,
               Constants.DRIVER_LIST_SIZE

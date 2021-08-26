@@ -95,7 +95,7 @@ exports.findDrivers = async (req, res) => {
       status: Constants.STATUS_ON,
     });
     if (drivers.length == 0) {
-      res.send({ success: true, drivers: [] });
+      res.send({ success: true, drivers: { GrabBike: [], GrabCar: [] } });
       res.end();
       return;
     }
@@ -169,7 +169,7 @@ exports.findDrivers = async (req, res) => {
                 distance: firebaseDriver["distanceOrigin"] / 1000,
               };
             })
-            .filter((driver) => driver["distanceOrigin"])
+            .filter((driver) => driver["distanceOrigin"] && driver["distanceOrigin"] <= 5000)
             .sort(
               (driver1, driver2) =>
                 driver1["distanceOrigin"] - driver2["distanceOrigin"]
